@@ -6,16 +6,16 @@
 苍穹外卖是一套企业级 Java 后端外卖项目，采用前后端分离架构。项目包含**商家管理后台接口**与**微信小程序用户端接口**，完整覆盖外卖平台核心业务流程，适合课程实训、毕业设计、简历项目展示。
 
 ## 🛠️ 技术栈
-| 分类 | 技术 |
-| ---- | ---- |
+| 分类     | 技术                  |
+|----------|-----------------------|
 | 核心框架 | SpringBoot、SpringMVC |
-| 持久层 | MyBatis、MyBatis-Plus |
-| 数据库 | MySQL 8.0 |
-| 缓存 | Redis |
-| 身份认证 | JWT |
-| 接口文档 | Knife4j(Swagger) |
-| 反向代理 | Nginx |
-| 工具 | Lombok、Maven |
+| 持久层   | MyBatis、MyBatis-Plus |
+| 数据库   | MySQL 8.0             |
+| 缓存     | Redis                 |
+| 身份认证 | JWT                   |
+| 接口文档 | Knife4j(Swagger)      |
+| 反向代理 | Nginx                 |
+| 工具     | Lombok、Maven         |
 
 ## 📦 功能模块
 ### 管理端（商家后台）
