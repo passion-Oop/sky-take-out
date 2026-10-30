@@ -34,8 +34,8 @@ public class EmployeeController {
     /**
      * 登录
      *
-     * @param employeeLoginDTO
-     * @return
+     * @param employeeLoginDTO 员工登录信息
+     * @return 员工登录后的信息
      */
     @PostMapping("/login")
     public Result<EmployeeLoginVO> login(@RequestBody EmployeeLoginDTO employeeLoginDTO) {
@@ -64,7 +64,7 @@ public class EmployeeController {
     /**
      * 退出
      *
-     * @return
+     * @return 退出结果
      */
     @PostMapping("/logout")
     public Result<String> logout() {
