@@ -14,13 +14,13 @@ public class JwtUtil {
      * 生成jwt
      * 使用Hs256算法, 私匙使用固定秘钥
      *
-     * @param secretKey jwt秘钥，长度不得少于32字节（HS256要求256位密钥）
+     * @param secretKey jwt秘钥，长度不得少于 32 字节（HS256要求256位密钥）
      * @param ttlMillis jwt过期时间(毫秒)
      * @param claims    设置的信息
-     * @return
+     * @return jwt令牌
      */
     public static String createJWT(String secretKey, long ttlMillis, Map<String, Object> claims) {
-        // jjwt 0.12+ 要求HS256的密钥不少于32字节，长度不足会直接抛 WeakKeyException
+        // JJWT 0.12+ 要求HS256的密钥不少于 32 字节，长度不足会直接抛 WeakKeyException
         SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
 
         // 生成JWT的时间
@@ -44,7 +44,7 @@ public class JwtUtil {
      *
      * @param secretKey jwt秘钥 此秘钥一定要保留好在服务端, 不能暴露出去, 否则sign就可以被伪造, 如果对接多个客户端建议改造成多个
      * @param token     加密后的token
-     * @return
+     * @return 解密后的token
      */
     public static Claims parseJWT(String secretKey, String token) {
         SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
