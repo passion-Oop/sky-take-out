@@ -39,15 +39,15 @@ public class autoFillAspect {
 
         if (operationType == OperationType.INSERT){
             try {
-                Method setUpdateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, long.class);
+                Method setUpdateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
                 Method setUpdateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
-                Method setCreateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_USER, long.class);
+                Method setCreateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_USER, Long.class);
                 Method setCreateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_TIME, LocalDateTime.class);
 
-                setUpdateUser.invoke(long.class, id);
-                setUpdateTime.invoke(LocalDateTime.class, time);
-                setCreateUser.invoke(long.class, id);
-                setCreateTime.invoke(LocalDateTime.class, time);
+                setUpdateUser.invoke(entity, id);
+                setUpdateTime.invoke(entity, time);
+                setCreateUser.invoke(entity, id);
+                setCreateTime.invoke(entity, time);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                 throw new RuntimeException(e);
             }
@@ -55,11 +55,11 @@ public class autoFillAspect {
 
         if (operationType == OperationType.UPDATE){
             try {
-                Method setUpdateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, long.class);
+                Method setUpdateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
                 Method setUpdateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
 
-                setUpdateUser.invoke(long.class, id);
-                setUpdateTime.invoke(LocalDateTime.class, time);
+                setUpdateUser.invoke(entity, id);
+                setUpdateTime.invoke(entity, time);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                 throw new RuntimeException(e);
             }
