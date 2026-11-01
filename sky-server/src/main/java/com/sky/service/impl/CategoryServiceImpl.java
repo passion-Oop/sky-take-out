@@ -112,13 +112,13 @@ public class CategoryServiceImpl implements CategoryService {
      * @param id
      */
     public void startOrStop(Integer status, Long id) {
-        Category category = Category.builder()
+
+        categoryMapper.update(Category.builder()
                 .id(id)
                 .status(status)
                 .updateTime(LocalDateTime.now())
                 .updateUser(BaseContext.getCurrentId())
-                .build();
-        categoryMapper.update(category);
+                .build());
     }
 
     /**
@@ -129,4 +129,5 @@ public class CategoryServiceImpl implements CategoryService {
     public List<Category> list(Integer type) {
         return categoryMapper.list(type);
     }
+
 }
