@@ -7,4 +7,42 @@
             values
         (#{name}, #{categoryId}, #{price}, #{image}, #{description}, #{createTime}, #{updateTime}, #{createUser}, #{updateUser})
     </insert>
+    <delete id="deleteById">
+        delete dish.* from dish
+        <where>
+            <if test="ids != null">
+                id in
+            </if>
+            <if test="ids != null">
+                <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </delete>
+    <select id="pageQuery" resultType="com.sky.vo.DishVO">
+        select dish.*, dish_flavor.name from dish left join dish_flavor on dish.id = dish_flavor.dish_id
+        <where>
+            <if test="name != null">
+                and dish.name like concat('%', #{name},'%')
+            </if>
+            <if test="categoryId != null">
+                and dish.category_id = #{categoryId}
+            </if>
+            <if test="status != null">
+                and dish.status = #{status}
+            </if>
+        </where>
+    </select>
+    <select id="getById" resultType="com.sky.entity.Dish">
+        select * from dish
+        <where>
+            <if test="ids != null">
+                id in
+                 <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                     #{id}
+                 </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

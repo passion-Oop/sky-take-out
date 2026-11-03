@@ -1,5 +1,6 @@
 package com.sky.controller.admin;
 
+import com.aliyun.oss.internal.OSSUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
