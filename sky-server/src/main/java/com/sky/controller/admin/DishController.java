@@ -7,6 +7,7 @@ import com.sky.entity.Dish;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.DishService;
+import com.sky.vo.DishVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -48,4 +49,21 @@ public class DishController {
         dishService.deleteByIds(ids);
         return Result.success();
     }
+
+    @PostMapping("/status/{status}")
+    @Operation(summary = "启用禁用菜品")
+    public Result<Void> startOrShop(@PathVariable Integer status, Long id){
+        log.info("启用禁用菜品：{}, {}", status, id);
+        dishService.startAndShop(status, id);
+        return Result.success();
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "根据id查询菜品")
+    public Result<DishVO> getById(@PathVariable Long id){
+        log.info("根据id查询菜品: {}", id);
+        DishVO dishVO = dishService.getByIdWithFlavor(id);
+        return Result.success(dishVO);
+    }
+
 }

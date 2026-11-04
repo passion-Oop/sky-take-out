@@ -8,6 +8,7 @@ import com.sky.enumeration.OperationType;
 import com.sky.vo.DishVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -28,7 +29,12 @@ public interface DishMapper {
 
     Page<DishVO> pageQuery(DishPageQueryDTO dishPageQueryDTO);
 
-    List<Dish> getById(List<Long> ids);
+    List<Dish> getByIds(List<Long> ids);
 
     void deleteById(List<Long> ids);
+
+    void update(Dish build);
+
+    @Select("select * from dish where id = #{id}")
+    Dish getById(Long id);
 }

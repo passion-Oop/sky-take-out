@@ -7,6 +7,24 @@
             values
         (#{name}, #{categoryId}, #{price}, #{image}, #{description}, #{createTime}, #{updateTime}, #{createUser}, #{updateUser})
     </insert>
+    <update id="update">
+        update sky_take_out.dish
+        <set>
+            <if test="name != null">name = #{name}</if>
+            <if test="categoryId != null">category_id = #{categoryId}</if>
+            <if test="price != null">price = #{price}</if>
+            <if test="image != null">image = #{image}</if>
+            <if test="description != null">description = #{description}</if>
+            <if test="status != null">status = #{status}</if>
+            <if test="createTime != null">create_time = #{createTime}</if>
+            <if test="updateTime != null">update_time = #{updateTime}</if>
+            <if test="createUser != null">create_user = #{createUser}</if>
+            <if test="updateUser != null">update_user = #{updateUser}</if>
+        </set>
+        <where>
+            <if test="id != null">id = #{id}</if>
+        </where>
+    </update>
     <delete id="deleteById">
         delete dish.* from dish
         <where>
@@ -34,7 +52,7 @@
             </if>
         </where>
     </select>
-    <select id="getById" resultType="com.sky.entity.Dish">
+    <select id="getByIds" resultType="com.sky.entity.Dish">
         select * from dish
         <where>
             <if test="ids != null">
