@@ -18,12 +18,13 @@
             <if test="status != null">status = #{status},</if>
             <if test="createTime != null">create_time = #{createTime},</if>
             <if test="createUser != null">create_user = #{createUser},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="updateUser != null">update_user = #{updateUser},</if>
         </set>
             where id = #{id}
     </update>
     <delete id="deleteById">
-        delete dish.* from dish
-        <where>
+        delete dish.* from dish where
             <if test="ids != null">
                 id in
             </if>
@@ -32,7 +33,6 @@
                     #{id}
                 </foreach>
             </if>
-        </where>
     </delete>
     <select id="pageQuery" resultType="com.sky.vo.DishVO">
         select dish.*, dish_flavor.name from dish left join dish_flavor on dish.id = dish_flavor.dish_id
