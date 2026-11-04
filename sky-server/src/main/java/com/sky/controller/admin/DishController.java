@@ -66,4 +66,12 @@ public class DishController {
         return Result.success(dishVO);
     }
 
+    @PutMapping
+    @Operation(summary = "编辑菜品")
+    public Result<Void> update(@RequestBody DishDTO dishDTO){
+        log.info("编辑菜品：{}", dishDTO);
+        dishService.updateWithFlavor(dishDTO);
+        return Result.success();
+    }
+
 }

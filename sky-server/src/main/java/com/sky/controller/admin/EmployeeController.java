@@ -93,7 +93,7 @@ public class EmployeeController {
 
     @PostMapping("/status/{status}")
     @Operation(summary = "启用禁用员工账号")
-    public Result startOrShop(@PathVariable Integer status, Long id){
+    public Result<Void> startOrShop(@PathVariable Integer status, Long id){
         log.info("启用禁用员工账号：{}, {}", status, id);
         employeeService.startOrShop(status, id);
         return Result.success();
@@ -109,7 +109,7 @@ public class EmployeeController {
 
     @PutMapping
     @Operation(summary = "编辑员工信息")
-    public Result update(@RequestBody EmployeeDTO employeeDTO){
+    public Result<Void> update(@RequestBody EmployeeDTO employeeDTO){
         log.info("编辑员工信息: {}", employeeDTO);
         employeeService.update(employeeDTO);
         return Result.success();

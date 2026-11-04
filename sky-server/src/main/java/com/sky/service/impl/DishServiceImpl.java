@@ -18,6 +18,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -111,6 +112,7 @@ public class DishServiceImpl implements DishService {
     }
 
     @Override
+    @Transactional
     public DishVO getByIdWithFlavor(Long id) {
         Dish dish = dishMapper.getById(id);
         List<DishFlavor> dishFlavorList = dishFlavorMapper.getById(id);
@@ -120,6 +122,27 @@ public class DishServiceImpl implements DishService {
         dishVO.setFlavors(dishFlavorList);
 
         return dishVO;
+    }
+
+    @Override
+    @Transactional
+    public void updateWithFlavor(DishDTO dishDTO) {
+        Dish dish = new Dish();
+
+        BeanUtils.copyProperties(dishDTO, dish);
+
+        dishMapper.update(dish);
+
+        dishFlavorMapper.deleteByDishId(Collections.singletonList(dishDTO.getId()));
+
+        List<DishFlavor> flavors = dishDTO.getFlavors();
+
+        if (!CollectionUtils.isEmpty(flavors)){
+            flavors.forEach(flavor -> flavor.setDishId(dishDTO.getId()));
+            dishFlavorMapper.insertBatch(flavors);
+        }
+
+
     }
 
 
