@@ -36,6 +36,7 @@ public class DishServiceImpl implements DishService {
 
     /**
      * 新增菜品
+     *
      * @param dishDTO 菜品信息
      */
     @Override
@@ -49,7 +50,7 @@ public class DishServiceImpl implements DishService {
 
         // 保存菜品口味
         List<DishFlavor> flavors = dishDTO.getFlavors();
-        if (flavors != null && !flavors.isEmpty()){
+        if (flavors != null && !flavors.isEmpty()) {
             flavors.forEach(flavor -> flavor.setDishId(dish.getId()));
             dishFlavorMapper.insertBatch(flavors);
         }
@@ -58,6 +59,7 @@ public class DishServiceImpl implements DishService {
 
     /**
      * 菜品分页查询
+     *
      * @param dishPageQueryDTO 菜品分页查询条件
      * @return 菜品分页查询结果
      */
@@ -73,6 +75,7 @@ public class DishServiceImpl implements DishService {
 
     /**
      * 根据id删除菜品
+     *
      * @param ids 菜品id列表
      */
     @Override
@@ -86,14 +89,14 @@ public class DishServiceImpl implements DishService {
                 .toList();
 
         // 如果在售，抛出业务异常
-        if (!dishList.isEmpty()){
+        if (!CollectionUtils.isEmpty(dishList)) {
             throw new DeletionNotAllowedException(MessageConstant.DISH_ON_SALE);
         }
 
         // 查询菜品是否被套餐关联
         List<Long> setmealIdsByDishIds = setmealDishMapper.getSetmealIdsByDishIds(ids);
 
-        if ( !setmealIdsByDishIds.isEmpty()){
+        if (!CollectionUtils.isEmpty(setmealIdsByDishIds)) {
             throw new DeletionNotAllowedException(MessageConstant.CATEGORY_BE_RELATED_BY_SETMEAL);
         }
 
@@ -124,6 +127,11 @@ public class DishServiceImpl implements DishService {
         return dishVO;
     }
 
+    /**
+     * 根据id更新菜品和口味
+     *
+     * @param dishDTO 菜品信息
+     */
     @Override
     @Transactional
     public void updateWithFlavor(DishDTO dishDTO) {
@@ -136,14 +144,11 @@ public class DishServiceImpl implements DishService {
         dishFlavorMapper.deleteByDishId(Collections.singletonList(dishDTO.getId()));
 
         List<DishFlavor> flavors = dishDTO.getFlavors();
+        if (!CollectionUtils.isEmpty(flavors)) {
 
-        if (!CollectionUtils.isEmpty(flavors)){
             flavors.forEach(flavor -> flavor.setDishId(dishDTO.getId()));
             dishFlavorMapper.insertBatch(flavors);
+
         }
-
-
     }
-
-
 }
