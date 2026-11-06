@@ -46,6 +46,7 @@ public class UserServiceImpl implements UserService {
                      .createTime(LocalDateTime.now())
                      .build();
             userMapper.insert(user);
+
         }
 
         return user;
