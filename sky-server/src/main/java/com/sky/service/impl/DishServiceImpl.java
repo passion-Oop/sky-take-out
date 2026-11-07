@@ -20,8 +20,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class DishServiceImpl implements DishService {
@@ -151,4 +154,42 @@ public class DishServiceImpl implements DishService {
 
         }
     }
+
+    /**
+     * 根据条件查询菜品，并带出菜品对应的口味
+     *
+     * @param dish 查询条件（分类id、状态、名称）
+     * @return 菜品及口味列表
+     */
+    @Override
+    public List<DishVO> listWithFlavor(Dish dish) {
+
+        List<Dish> dishList = dishMapper.list(dish);
+
+        if (CollectionUtils.isEmpty(dishList)) {
+            return Collections.emptyList();
+        }
+
+        List<Long> dishIds = dishList.stream()
+                .map(Dish::getId)
+                .toList();
+
+        Map<Long, List<DishFlavor>> flavorMap = dishFlavorMapper.getByDishIds(dishIds)
+                .stream()
+                .collect(Collectors.groupingBy(DishFlavor::getDishId));
+        
+        List<DishVO> dishVOList = new ArrayList<>(dishList.size());
+
+        for (Dish d : dishList) {
+
+            DishVO dishVO = new DishVO();
+            BeanUtils.copyProperties(d, dishVO);
+
+            dishVO.setFlavors(flavorMap.getOrDefault(d.getId(), new ArrayList<>()));
+            
+            dishVOList.add(dishVO);
+        }
+        return dishVOList;
+    }
+
 }

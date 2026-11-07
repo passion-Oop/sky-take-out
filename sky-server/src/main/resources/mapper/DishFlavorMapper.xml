@@ -21,4 +21,11 @@
             </where>
 
     </delete>
+    <select id="getByDishIds" resultType="com.sky.entity.DishFlavor">
+        select * from dish_flavor
+        where dish_id in
+        <foreach collection="dishIds" separator="," item="dishId" open="(" close=")">
+            #{dishId}
+        </foreach>
+    </select>
 </mapper>

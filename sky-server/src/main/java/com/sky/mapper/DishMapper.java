@@ -8,7 +8,6 @@ import com.sky.enumeration.OperationType;
 import com.sky.vo.DishVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -38,4 +37,12 @@ public interface DishMapper {
 
     @Select("select * from dish where id = #{id}")
     Dish getById(Long id);
+
+    /**
+     * 根据条件查询菜品
+     *
+     * @param dish 查询条件（分类id、状态、名称）
+     * @return 菜品列表
+     */
+    List<Dish> list(Dish dish);
 }

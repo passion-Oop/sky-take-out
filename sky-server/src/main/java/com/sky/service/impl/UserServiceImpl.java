@@ -7,10 +7,10 @@ import com.sky.dto.UserLoginDTO;
 import com.sky.entity.User;
 import com.sky.exception.LoginFailedException;
 import com.sky.mapper.UserMapper;
-import com.sky.properties.JwtProperties;
+import com.sky.properties.WeChatProperties;
 import com.sky.service.UserService;
 import com.sky.utils.HttpClientUtil;
-import com.sky.utils.WeChatPayUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,13 +18,14 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class UserServiceImpl implements UserService {
 
     public static final String WX_LOGIN = "https://api.weixin.qq.com/sns/jscode2session";
 
     @Autowired
-    JwtProperties jwtProperties;
+    WeChatProperties weChatProperties;
 
     @Autowired
     UserMapper userMapper;
@@ -41,10 +42,12 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.getByOpenid(openid);
 
         if (user == null) {
+
             user = User.builder()
                      .openid(openid)
                      .createTime(LocalDateTime.now())
                      .build();
+
             userMapper.insert(user);
 
         }
@@ -55,13 +58,19 @@ public class UserServiceImpl implements UserService {
     private String getOpenid(UserLoginDTO userLoginDTO) {
 
         Map<String, String> map = new HashMap<>();
-        map.put("appid", jwtProperties.getUserSecretKey());
-        map.put("secret", jwtProperties.getUserSecretKey());
+        map.put("appid", weChatProperties.getAppid());
+        map.put("secret", weChatProperties.getSecret());
         map.put("js_code", userLoginDTO.getCode());
         map.put("grant_type", "authorization_code");
 
         String response = HttpClientUtil.doGet(WX_LOGIN, map);
+        log.info("微信登录接口返回:{}", response);
+
         JSONObject jsonObject = JSON.parseObject(response);
+        if (jsonObject == null || jsonObject.getInteger("errcode") != null) {
+            log.error("获取openid失败,微信返回:{}", response);
+            return null;
+        }
 
         return jsonObject.getString("openid");
     }
