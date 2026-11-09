@@ -35,6 +35,7 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @return 员工登录后的信息
      */
     public Employee login(EmployeeLoginDTO employeeLoginDTO) {
+
         String username = employeeLoginDTO.getUsername();
         String password = employeeLoginDTO.getPassword();
 
@@ -66,27 +67,35 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public void save(EmployeeDTO employeeDTO) {
+
         Employee employee = new Employee();
         BeanUtils.copyProperties(employeeDTO, employee);
+
         employee.setStatus(StatusConstant.ENABLE);
         employee.setPassword(DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_PASSWORD.getBytes()));
+
         employeeMapper.insert(employee);
     }
 
     @Override
     public PageResult pageQuery(EmployeePageQueryDTO employeePageQueryDTO) {
+
         PageHelper.startPage(employeePageQueryDTO.getPage(), employeePageQueryDTO.getPageSize());
+
         Page<Employee> page = employeeMapper.pageQuery(employeePageQueryDTO);
+
         return new PageResult(page.getTotal(), page.getResult());
     }
 
     @Override
     public void startOrShop(Integer status, Long id) {
+
         employeeMapper.update(Employee
                 .builder()
                 .status(status)
                 .id(id)
                 .build());
+
     }
 
     @Override
