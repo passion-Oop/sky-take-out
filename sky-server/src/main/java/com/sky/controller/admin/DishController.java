@@ -8,6 +8,7 @@ import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.DishService;
 import com.sky.vo.DishVO;
+import com.sky.vo.DishWithSetmealItemVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ public class DishController {
 
     @Autowired
     RedisTemplate redisTemplate;
+
     @Autowired
     private RedisCacheManager cacheManager;
 
@@ -84,6 +86,14 @@ public class DishController {
         log.info("编辑菜品：{}", dishDTO);
         dishService.updateWithFlavor(dishDTO);
         return Result.success();
+    }
+
+    @GetMapping("/list")
+    @Operation(summary = "根据categoryId查询菜品")
+    public Result<List<DishWithSetmealItemVO>> getByCategoryId(Long categoryId){
+        log.info("根据categoryId查询菜品: {}", categoryId);
+        List<DishWithSetmealItemVO> dishWithSetmealItemVOList = dishService.getByCategoryId(categoryId);
+        return Result.success(dishWithSetmealItemVOList);
     }
 
 }

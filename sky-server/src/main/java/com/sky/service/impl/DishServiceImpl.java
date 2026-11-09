@@ -14,6 +14,7 @@ import com.sky.mapper.SetmealDishMapper;
 import com.sky.result.PageResult;
 import com.sky.service.DishService;
 import com.sky.vo.DishVO;
+import com.sky.vo.DishWithSetmealItemVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -190,6 +191,11 @@ public class DishServiceImpl implements DishService {
             dishVOList.add(dishVO);
         }
         return dishVOList;
+    }
+
+    @Override
+    public List<DishWithSetmealItemVO> getByCategoryId(Long categoryId) {
+        return dishMapper.getByCategoryId(categoryId);
     }
 
 }
