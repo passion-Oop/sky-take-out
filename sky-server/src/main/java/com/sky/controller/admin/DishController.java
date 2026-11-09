@@ -12,10 +12,15 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @RestController
@@ -25,6 +30,11 @@ public class DishController {
 
     @Autowired
     DishService dishService;
+
+    @Autowired
+    RedisTemplate redisTemplate;
+    @Autowired
+    private RedisCacheManager cacheManager;
 
     @PostMapping
     @Operation(summary = "新增菜品")
@@ -44,6 +54,7 @@ public class DishController {
 
     @DeleteMapping
     @Operation(summary = "批量删除菜品")
+    @CacheEvict(cacheNames = "setmealCache", allEntries = true)
     public Result<Void> deleteByIds(@RequestParam List<Long> ids){
         log.info("批量删除菜品: {}", ids);
         dishService.deleteByIds(ids);
@@ -54,6 +65,7 @@ public class DishController {
     @Operation(summary = "启用禁用菜品")
     public Result<Void> startOrShop(@PathVariable Integer status, Long id){
         log.info("启用禁用菜品：{}, {}", status, id);
+
         dishService.startAndShop(status, id);
         return Result.success();
     }
@@ -61,7 +73,7 @@ public class DishController {
     @GetMapping("/{id}")
     @Operation(summary = "根据id查询菜品")
     public Result<DishVO> getById(@PathVariable Long id){
-        log.info("根据id查询菜品: {}", id);
+        log.info("根据id查询菜品: {}", id);   
         DishVO dishVO = dishService.getByIdWithFlavor(id);
         return Result.success(dishVO);
     }
