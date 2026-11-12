@@ -1,6 +1,7 @@
 package com.sky.config;
 
 import com.sky.interceptor.JwtTokenAdminInterceptor;
+import com.sky.interceptor.JwtTokenUserInterceptor;
 import com.sky.json.JacksonObjectMapper;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
@@ -29,6 +30,9 @@ public class  WebMvcConfiguration implements WebMvcConfigurer {
     @Autowired
     private JwtTokenAdminInterceptor jwtTokenAdminInterceptor;
 
+    @Autowired
+    private JwtTokenUserInterceptor jwtTokenUserInterceptor;
+
     /**
      * 注册自定义拦截器
      *
@@ -40,6 +44,19 @@ public class  WebMvcConfiguration implements WebMvcConfigurer {
         registry.addInterceptor(jwtTokenAdminInterceptor)
                 .addPathPatterns("/admin/**")
                 .excludePathPatterns("/admin/employee/login");
+
+        // 用户端拦截器：校验令牌后把userId放入BaseContext，购物车、地址簿、订单等接口依赖它
+        registry.addInterceptor(jwtTokenUserInterceptor)
+                .addPathPatterns("/user/**")
+                // 登录接口与无需登录即可访问的公开查询接口放行
+                .excludePathPatterns(
+                        "/user/user/login",
+                        "/user/shop/status",
+                        "/user/category/list",
+                        "/user/dish/list",
+                        "/user/setmeal/list",
+                        "/user/setmeal/dish/*"
+                );
     }
 
     /**

@@ -35,7 +35,12 @@ public class AutoFillAspect {
         }
         Object entity = args[0];
         LocalDateTime time = LocalDateTime.now();
-        long id = BaseContext.getCurrentId();
+        Long id = BaseContext.getCurrentId();
+        // 未登录或非员工操作时无法获取操作人id，直接跳过公共字段填充，避免拆箱空指针
+        if (id == null) {
+            log.warn("未获取到当前操作人id，跳过公共字段填充");
+            return;
+        }
 
         if (operationType == OperationType.INSERT){
             try {

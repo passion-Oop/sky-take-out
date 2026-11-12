@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,22 +37,15 @@ public class DishController {
      */
     @GetMapping("/list")
     @Operation(summary = "根据分类id查询菜品")
+    @CacheEvict(cacheNames = "setmealCache", key = "#categoryId")
     public Result<List<DishVO>> list(Long categoryId) {
-
-        String key = "dish_" + categoryId;
-
-        List<DishVO> list = (List<DishVO>) redisTemplate.opsForValue().get(key);
-
-        if (!Collections.isEmpty(list)) {
-            return Result.success(list);
-        }
 
         Dish dish = new Dish();
         dish.setCategoryId(categoryId);
         dish.setStatus(StatusConstant.ENABLE);//查询起售中的菜品
 
-        list = dishService.listWithFlavor(dish);
-        redisTemplate.opsForValue().set(key, list);
+        List<DishVO> list = dishService.listWithFlavor(dish);
+
 
         return Result.success(list);
     }
