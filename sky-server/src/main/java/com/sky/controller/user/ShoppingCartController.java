@@ -1,5 +1,6 @@
 package com.sky.controller.user;
 
+import com.sky.context.BaseContext;
 import com.sky.dto.ShoppingCartDTO;
 import com.sky.entity.ShoppingCart;
 import com.sky.result.Result;
@@ -31,8 +32,27 @@ public class ShoppingCartController {
 
     @GetMapping("/list")
     @Operation(summary = "获取购物车信息相关接口")
-    Result<List<ShoppingCart>> getShoppingCartDTO() {
-        List<ShoppingCart> list = shoppingCartService.list();
+    public Result<List<ShoppingCart>> getShoppingCartDTO() {
+        log.info("获取购物车数据");
+        List<ShoppingCart> list = shoppingCartService.showShoppingCart();
         return Result.success(list);
     }
+
+    @PostMapping("/sub")
+    @Operation(summary = "购物车减量相关接口")
+    public Result<Void> subShoppingCart(@RequestBody ShoppingCartDTO shoppingCartDTO) {
+        log.info("购物车减量数据：{}", shoppingCartDTO);
+        shoppingCartService.subShoppingCart(shoppingCartDTO);
+        return Result.success();
+    }
+
+    @DeleteMapping("/clean")
+    @Operation(summary = "清空购物车相关接口")
+    public Result<Void> cleanShoppingCart() {
+        log.info("清空{}用户购物车数据", BaseContext.getCurrentId());
+        shoppingCartService.cleanShoppingCart();
+        return Result.success();
+    }
+
+
 }
