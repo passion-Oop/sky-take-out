@@ -1,6 +1,7 @@
 package com.sky.service.impl;
 
 import ch.qos.logback.core.ContextBase;
+import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.ShoppingCartDTO;
 import com.sky.entity.Dish;
@@ -95,7 +96,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                 shoppingCartMapper.updateNumberById(listFirstShoppingCart);
             }
         } else {
-            throw new ShoppingCartBusinessException("购物车为空");
+            throw new ShoppingCartBusinessException(MessageConstant.SHOPPING_CART_IS_NULL);
         }
 
     }
