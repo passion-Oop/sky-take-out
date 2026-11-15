@@ -1,7 +1,6 @@
 package com.sky.controller.user;
 
 import com.sky.context.BaseContext;
-import com.sky.dto.OrdersCancelDTO;
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
@@ -18,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 
-@RestController
+@RestController("userOrderController")
 @RequestMapping("/user/order")
 @Tag(name = "订单相关", description = "订单相关接口")
 @Slf4j
@@ -56,7 +55,7 @@ public class OrderController {
     public Result<PageResult> historyOrder(OrdersPageQueryDTO ordersPageQueryDTO) {
         ordersPageQueryDTO.setUserId(BaseContext.getCurrentId());
         log.info("历史订单分页查询: {}", ordersPageQueryDTO);
-        PageResult pageResult = orderService.pageQuery(ordersPageQueryDTO);
+        PageResult pageResult = orderService.userPageQuery(ordersPageQueryDTO);
         return Result.success(pageResult);
     }
 
@@ -72,7 +71,15 @@ public class OrderController {
     @Operation(summary = "取消订单")
     public Result<Void> cancelOrder(@PathVariable Long id) {
         log.info("取消订单id：{}", id);
-        orderService.cancelOrder(id);
+        orderService.cancelOrderWithUser(id);
+        return Result.success();
+    }
+
+    @PostMapping("/repetition/{id}")
+    @Operation(summary = "用户重复下单")
+    public Result<Void> repetition(@PathVariable Long id) {
+        log.info("用户重复下单: {}", id);
+        orderService.repetition(id);
         return Result.success();
     }
 

@@ -5,6 +5,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
+import com.sky.dto.OrdersCancelDTO;
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
@@ -17,6 +18,7 @@ import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
+import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
 import org.springframework.beans.BeanUtils;
@@ -25,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -107,8 +110,8 @@ public class OrderServiceImpl implements OrderService {
     /**
      * 订单支付
      *
-     * @param ordersPaymentDTO
-     * @return
+     * @param ordersPaymentDTO 订单支付DTO
+     * @return 支付信息
      */
     public OrderPaymentVO payment(OrdersPaymentDTO ordersPaymentDTO) throws Exception {
         // 当前登录用户id
@@ -137,7 +140,7 @@ public class OrderServiceImpl implements OrderService {
     /**
      * 支付成功，修改订单状态
      *
-     * @param outTradeNo
+     * @param outTradeNo 订单号
      */
     @Transactional
     public void paySuccess(String outTradeNo) {
@@ -158,7 +161,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public PageResult pageQuery(OrdersPageQueryDTO ordersPageQueryDTO) {
+    public PageResult userPageQuery(OrdersPageQueryDTO ordersPageQueryDTO) {
 
         PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
         Page<Orders> ordersPage = orderMapper.pageQuery(ordersPageQueryDTO);
@@ -196,11 +199,127 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void cancelOrder(Long id) {
-        Orders orders = new Orders();
-        orders.setStatus(Orders.CANCELLED);
-        orders.setId(id);
-        orderMapper.update(orders);
+    public void cancelOrderWithUser(Long id) {
+        orderMapper.update(Orders.builder()
+                .id(id)
+                .status(Orders.CANCELLED)
+                .cancelTime(LocalDateTime.now())
+                .amount(new BigDecimal("0.00"))
+                .build());
+    }
+
+    @Override
+    @Transactional
+    public void repetition(Long id) {
+        Orders orders = orderMapper.select(id);
+        List<OrderDetail> orderDetailList = orderDetailMapper.getById(id);
+
+        // 主键置空，新订单id由数据库生成
+        orders.setId(null);
+        orders.setNumber(String.valueOf(System.currentTimeMillis()));
+        orders.setStatus(Orders.PENDING_PAYMENT);
+        orders.setPayStatus(Orders.UN_PAID);
+        orders.setOrderTime(LocalDateTime.now());
+        orders.setCheckoutTime(null);
+        orders.setCancelTime(null);
+        orders.setCancelReason(null);
+        orders.setRejectionReason(null);
+        orders.setDeliveryTime(null);
+        orderMapper.insert(orders);
+
+        // 明细需要挂到新订单上，必须在insert之后取新id
+        for (OrderDetail orderDetail : orderDetailList) {
+            orderDetail.setId(null);
+            orderDetail.setOrderId(orders.getId());
+        }
+        orderDetailMapper.insertBatch(orderDetailList);
+    }
+
+    @Override
+    public void cancelOrderWithAdmin(OrdersCancelDTO ordersCancelDTO) {
+        orderMapper.update(Orders.builder()
+                .id(ordersCancelDTO.getId())
+                .status(Orders.CANCELLED)
+                .cancelTime(LocalDateTime.now())
+                .amount(new BigDecimal("0.00"))
+                .cancelReason(ordersCancelDTO.getCancelReason())
+                .build());
+    }
+
+    @Override
+    public OrderStatisticsVO getStatisticsVO() {
+        return orderMapper.getStatisticsVO();
+    }
+
+    @Override
+    public void completeOrder(Long id) {
+        orderMapper.update(Orders.builder()
+                .id(id)
+                .status(Orders.COMPLETED)
+                .deliveryTime(LocalDateTime.now())
+                .build());
+    }
+
+    @Override
+    public void rejectionOrder(OrdersCancelDTO ordersCancelDTO) {
+        orderMapper.update(Orders.builder()
+                .id(ordersCancelDTO.getId())
+                .status(Orders.CANCELLED)
+                .cancelTime(LocalDateTime.now())
+                .cancelReason(ordersCancelDTO.getCancelReason())
+                .build());
+    }
+
+    @Override
+    public void confirmOrder(Long id) {
+        orderMapper.update(Orders.builder()
+                .id(id)
+                .status(Orders.CONFIRMED)
+                .build());
+    }
+
+    @Override
+    public void deliveryOrder(Long id) {
+        orderMapper.update(Orders.builder()
+                .id(id)
+                .status(Orders.DELIVERY_IN_PROGRESS)
+                .build());
+    }
+
+    @Override
+    @Transactional
+    public PageResult adminPageQuery(OrdersPageQueryDTO ordersPageQueryDTO) {
+
+        PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
+        Page<Orders> ordersPage = orderMapper.pageQuery(ordersPageQueryDTO);
+
+        if (CollectionUtils.isEmpty(ordersPage)) {
+            return new PageResult(0, new ArrayList<>());
+        }
+
+        List<Long> orderIdList = ordersPage.stream().map(Orders::getId).toList();
+
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderIds(orderIdList);
+
+        Map<Long, List<OrderDetail>> orderDetailMap = orderDetailList.stream()
+                .collect(Collectors.groupingBy(OrderDetail::getOrderId));
+
+        List<OrderVO> orderVOList = new ArrayList<>();
+
+        for (Orders orders : ordersPage) {
+
+            OrderVO orderVO = new OrderVO();
+            BeanUtils.copyProperties(orders, orderVO);
+
+            List<OrderDetail> details = orderDetailMap.getOrDefault(orders.getId(), new ArrayList<>());
+            orderVO.setOrderDishes(details.stream()
+                    .map(s -> s.getName() + "*" + s.getNumber())
+                    .collect(Collectors.joining(",")));
+
+            orderVOList.add(orderVO);
+        }
+
+        return new PageResult(ordersPage.getTotal(), orderVOList);
     }
 
 
