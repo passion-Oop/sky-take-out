@@ -29,7 +29,7 @@ public class OrderController {
         return Result.success(orderService.getById(id));
     }
 
-    @PutMapping
+    @PutMapping("/cancel")
     @Operation(summary = "取消订单")
     public Result<Void> cancelOrder(@RequestBody OrdersCancelDTO ordersCancelDTO) {
         log.info("接收到取消订单编号为：{} 的订单", ordersCancelDTO);
@@ -79,11 +79,12 @@ public class OrderController {
 
     @GetMapping("/conditionSearch")
     @Operation(summary = "条件查询订单")
-    public Result<?> conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO) {
+    public Result<PageResult> conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO) {
         log.info("接收到条件查询订单请求 {}", ordersPageQueryDTO);
         PageResult pageResult = orderService.adminPageQuery(ordersPageQueryDTO);
         return Result.success(pageResult);
     }
+
 
 
 }

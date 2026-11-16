@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -16,6 +17,7 @@ import com.sky.exception.ShoppingCartBusinessException;
 import com.sky.mapper.*;
 import com.sky.result.PageResult;
 import com.sky.service.OrderService;
+import com.sky.utils.HttpClientUtil;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderStatisticsVO;
@@ -23,6 +25,7 @@ import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -53,6 +56,12 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private WeChatPayUtil weChatPayUtil;
 
+    @Value("${sky.shop.address}")
+    private String shopAddress;
+
+    @Value("${sky.baidu.ak}")
+    private String ak;
+
 
     @Override
     @Transactional
@@ -73,6 +82,8 @@ public class OrderServiceImpl implements OrderService {
         if (addressBook == null) {
             throw new AddressBookBusinessException(MessageConstant.ADDRESS_BOOK_IS_NULL);
         }
+
+        checkOutOfRange(addressBook.getCityCode() + addressBook.getDistrictName() + addressBook.getDetail());
 
         Orders orders = new Orders();
         User user = userMapper.getById(userId);
@@ -320,6 +331,63 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return new PageResult(ordersPage.getTotal(), orderVOList);
+    }
+
+    private void checkOutOfRange(String address) {
+        Map<String, String> map = new HashMap<>();
+        map.put("address", shopAddress);
+        map.put("output", "json");
+        map.put("ak", ak);
+
+        // 百度路线规划接口要求坐标为 "纬度,经度" 顺序
+        String shopLatLng = getLatLng(map, "店铺地址解析失败");
+
+        map.put("address", address);
+
+        String userLatLng = getLatLng(map, "收货地址解析失败");
+
+        Map<String, String> directionliteMap = new HashMap<>();
+
+        directionliteMap.put("origin", shopLatLng);
+        directionliteMap.put("destination", userLatLng);
+        directionliteMap.put("ak", ak);
+
+        String routePlan = HttpClientUtil.doGet("https://api.map.baidu.com/directionlite/v1/driving", directionliteMap);
+
+        JSONObject routePlanJsonObject = JSONObject.parseObject(routePlan);
+
+        String routeStatus = routePlanJsonObject.getString("status");
+        if (!"0".equals(routeStatus)) {
+            // 同样把百度返回的错误码和描述带出来，避免只看到笼统的"规划失败"
+            throw new OrderBusinessException("配送路线规划失败：" + routePlanJsonObject.getString("message")
+                    + "（status=" + routeStatus + "）");
+        }
+
+        JSONObject result = routePlanJsonObject.getJSONObject("result");
+        JSONArray jsonArray = result.getJSONArray("routes");
+        Integer distance = (Integer) ((JSONObject) jsonArray.getFirst()).get("distance");
+
+        if (distance > 5000) {
+            //配送距离超过5000米
+            throw new OrderBusinessException("超出配送范围");
+        }
+    }
+
+    private String getLatLng (Map<String, String> map, String msg) {
+        String shopCoordinate = HttpClientUtil.doGet("https://api.map.baidu.com/geocoding/v3", map);
+
+        JSONObject jsonObject = JSONObject.parseObject(shopCoordinate);
+
+        String status = jsonObject.getString("status");
+        if (!"0".equals(status)) {
+            // 把百度返回的 status 和 message 一并抛出，便于定位问题（如 AK 无权访问、配额超限等）
+            throw new OrderBusinessException(msg + "：" + jsonObject.getString("message") + "（status=" + status + "）");
+        }
+
+        JSONObject location = jsonObject.getJSONObject("result").getJSONObject("location");
+
+        // 注意：百度路线规划接口的坐标顺序是 "纬度,经度"，与地理编码返回字段的 lng/lat 正好相反
+        return location.getString("lat") + "," + location.getString("lng");
     }
 
 

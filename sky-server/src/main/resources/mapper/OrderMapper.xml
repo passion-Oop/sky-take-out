@@ -46,13 +46,8 @@
     </select>
     <select id="getStatisticsVO" resultType="com.sky.vo.OrderStatisticsVO">
         select
-            case orders.status
-                when 3 then 'toBeConfirmed'
-                when 2 then 'confirmed'
-                when 4 then 'deliveryInProgress'
-                end as status_name, count(*) as count
-        from orders
-        where orders.status in (3 ,2 ,4)
-        group by orders.status;
+                (select count(*) from orders where status = 2) as toBeConfirmed,
+                (select count(*) from orders where status = 3) as confirmed,
+                (select count(*) from orders where status = 4) as deliveryInProgress
     </select>
 </mapper>

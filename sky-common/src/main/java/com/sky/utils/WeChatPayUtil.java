@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.cert.X509Certificate;
@@ -88,12 +89,16 @@ public class WeChatPayUtil {
         httpPost.addHeader("Wechatpay-Serial", weChatProperties.getMchSerialNo());
         httpPost.setEntity(new StringEntity(body, "UTF-8"));
 
-        CloseableHttpResponse response = httpClient.execute(httpPost);
+        CloseableHttpResponse response = null;
+        if (httpClient != null) {
+            response = httpClient.execute(httpPost);
+        }
         try {
-            String bodyAsString = EntityUtils.toString(response.getEntity());
-            return bodyAsString;
+            return EntityUtils.toString(response.getEntity());
         } finally {
-            httpClient.close();
+            if (httpClient != null) {
+                httpClient.close();
+            }
             response.close();
         }
     }
@@ -112,10 +117,12 @@ public class WeChatPayUtil {
         httpGet.addHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
         httpGet.addHeader("Wechatpay-Serial", weChatProperties.getMchSerialNo());
 
-        CloseableHttpResponse response = httpClient.execute(httpGet);
+        CloseableHttpResponse response = null;
+        if (httpClient != null) {
+            response = httpClient.execute(httpGet);
+        }
         try {
-            String bodyAsString = EntityUtils.toString(response.getEntity());
-            return bodyAsString;
+            return EntityUtils.toString(response.getEntity());
         } finally {
             httpClient.close();
             response.close();
@@ -140,7 +147,7 @@ public class WeChatPayUtil {
         jsonObject.put("notify_url", weChatProperties.getNotifyUrl());
 
         JSONObject amount = new JSONObject();
-        amount.put("total", total.multiply(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_UP).intValue());
+        amount.put("total", total.multiply(new BigDecimal(100)).setScale(2, RoundingMode.HALF_UP).intValue());
         amount.put("currency", "CNY");
 
         jsonObject.put("amount", amount);
@@ -220,8 +227,8 @@ public class WeChatPayUtil {
         jsonObject.put("out_refund_no", outRefundNo);
 
         JSONObject amount = new JSONObject();
-        amount.put("refund", refund.multiply(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_UP).intValue());
-        amount.put("total", total.multiply(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_UP).intValue());
+        amount.put("refund", refund.multiply(new BigDecimal(100)).setScale(2, RoundingMode.HALF_UP).intValue());
+        amount.put("total", total.multiply(new BigDecimal(100)).setScale(2, RoundingMode.HALF_UP).intValue());
         amount.put("currency", "CNY");
 
         jsonObject.put("amount", amount);
