@@ -33,6 +33,16 @@
         </set>
         where id = #{id}
     </update>
+    <update id="batchUpdate">
+        update orders
+        set status = #{ordersList[0].status},
+        cancel_reason = #{ordersList[0].cancelReason},
+        cancel_time = #{ordersList[0].cancelTime}
+        where id in
+        <foreach collection="ordersList" item="od" open="(" separator="," close=")">
+            #{od.id}
+        </foreach>
+    </update>
     <select id="pageQuery" resultType="com.sky.entity.Orders">
         select * from orders
         <where>
