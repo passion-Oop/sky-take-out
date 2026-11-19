@@ -94,11 +94,15 @@ public class  WebMvcConfiguration implements WebMvcConfigurer {
 
     @Override
     public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-        // 创建一个消息转换器对象: 用于将Java对象转换为JSON格式的数据
-        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-        // 设置对象映射器为JacksonObjectMapper: 设置消息转换器使用JacksonObjectMapper进行JSON转换
-        converter.setObjectMapper(new JacksonObjectMapper());
-        // 将转换器添加到转换器列表的开头, 提高转换器的优先级
-        converters.addFirst(converter);
+        // 不要 new 一个转换器 addFirst：自定义 Jackson 转换器排在 ByteArray 转换器之前时，
+        // springdoc 的 /v3/api-docs 返回的 byte[] 会被当成普通对象序列化成 Base64 字符串，
+        // 导致 Knife4j 前端解析不到 OpenAPI JSON，报“文档请求异常”。
+        // 这里改成直接替换 Spring Boot 默认 Jackson 转换器使用的 ObjectMapper，保持原有顺序。
+        for (HttpMessageConverter<?> converter : converters) {
+            if (converter instanceof MappingJackson2HttpMessageConverter jacksonConverter) {
+                jacksonConverter.setObjectMapper(new JacksonObjectMapper());
+                break;
+            }
+        }
     }
 }
