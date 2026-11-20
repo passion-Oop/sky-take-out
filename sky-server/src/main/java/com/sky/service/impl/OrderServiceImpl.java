@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
@@ -23,6 +24,7 @@ import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
+import com.sky.websocket.WebSocketServer;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,6 +63,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Value("${sky.baidu.ak}")
     private String ak;
+
+    @Autowired
+    private WebSocketServer webSocketServer;
 
 
     @Override
@@ -153,6 +158,7 @@ public class OrderServiceImpl implements OrderService {
      *
      * @param outTradeNo 订单号
      */
+    @Override
     @Transactional
     public void paySuccess(String outTradeNo) {
 
@@ -168,6 +174,17 @@ public class OrderServiceImpl implements OrderService {
                 .build();
 
         orderMapper.update(orders);
+
+        //通过websocket向服务端推送消息
+        Map<String, Object> map = new HashMap<>();
+        map.put("type", 1);
+        map.put("orderId", ordersDB.getId());
+        // 管理端前端读取的是 content 字段（见 app.js 的 n.content），键名不能写成中文“订单号”
+        map.put("content", "订单号：" + outTradeNo);
+
+        String jsonString = JSON.toJSONString(map);
+
+        webSocketServer.sendToAllClient(jsonString);
     }
 
     @Override
@@ -331,6 +348,23 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return new PageResult(ordersPage.getTotal(), orderVOList);
+    }
+
+    @Override
+    public void reminder(Long id) {
+
+        Orders orders = orderMapper.select(id);
+
+        if (orders == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("type", 2);
+        map.put("orderId", id);
+        // 管理端前端读取的是 content 字段（见 app.js 的 n.content），键名不能写成中文“订单号”
+        map.put("content", "订单号：" + orders.getNumber());
+        webSocketServer.sendToAllClient(JSON.toJSONString(map));
     }
 
     private void checkOutOfRange(String address) {

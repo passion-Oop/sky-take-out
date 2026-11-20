@@ -1,4 +1,4 @@
-package com.sky.controller.user;
+package com.sky.controller.notify;
 
 import com.alibaba.druid.support.json.JSONUtils;
 import com.alibaba.fastjson.JSON;
@@ -39,6 +39,8 @@ public class PayNotifyController {
         //读取数据
         String body = readData(request);
         log.info("支付成功回调：{}", body);
+
+
 
         //数据解密
         String plainText = decryptData(body);

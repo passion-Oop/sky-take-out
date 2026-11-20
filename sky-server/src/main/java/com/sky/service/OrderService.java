@@ -49,4 +49,6 @@ public interface OrderService {
     void deliveryOrder(Long id);
 
     PageResult adminPageQuery(OrdersPageQueryDTO ordersPageQueryDTO);
+
+    void reminder(Long id);
 }

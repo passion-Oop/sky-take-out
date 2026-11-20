@@ -1,9 +1,0 @@
-**/target/
-.idea
-*.iml
-*.class
-*Test.java
-**/test/
-.claude
-.mcp.json
-/.claude/
