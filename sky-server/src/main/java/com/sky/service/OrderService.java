@@ -11,7 +11,7 @@ import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
 
 
-public interface OrderService {
+public interface  OrderService {
 
     OrderSubmitVO submitOrder(OrdersSubmitDTO ordersSubmitDTO);
 

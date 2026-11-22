@@ -2,13 +2,12 @@ package com.sky.mapper;
 
 import com.github.pagehelper.Page;
 import com.sky.dto.OrdersPageQueryDTO;
-import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;
 import com.sky.vo.OrderStatisticsVO;
-import com.sky.vo.OrderVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -30,7 +29,7 @@ public interface OrderMapper {
      */
     void update(Orders orders);
 
-    Page<Orders> pageQuery(OrdersPageQueryDTO ordersPageQueryDTO);
+    Page<Orders> batchQuery(OrdersPageQueryDTO ordersPageQueryDTO);
 
     @Select("select * from orders where id = #{id}")
     Orders select(Long id);
@@ -42,4 +41,6 @@ public interface OrderMapper {
     List<Orders> getByStatusAndOrderTimeLT(Integer pendingPayment, LocalDateTime time);
 
     void batchUpdate(List<Orders> ordersList);
+
+    BigDecimal getTurnoverStatistics(LocalDateTime begin, LocalDateTime end, Integer completed);
 }

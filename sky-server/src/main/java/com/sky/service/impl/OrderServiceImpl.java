@@ -192,7 +192,7 @@ public class OrderServiceImpl implements OrderService {
     public PageResult userPageQuery(OrdersPageQueryDTO ordersPageQueryDTO) {
 
         PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
-        Page<Orders> ordersPage = orderMapper.pageQuery(ordersPageQueryDTO);
+        Page<Orders> ordersPage = orderMapper.batchQuery(ordersPageQueryDTO);
 
         if (CollectionUtils.isEmpty(ordersPage)) {
             return new PageResult(0, new ArrayList<>());
@@ -319,7 +319,7 @@ public class OrderServiceImpl implements OrderService {
     public PageResult adminPageQuery(OrdersPageQueryDTO ordersPageQueryDTO) {
 
         PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
-        Page<Orders> ordersPage = orderMapper.pageQuery(ordersPageQueryDTO);
+        Page<Orders> ordersPage = orderMapper.batchQuery(ordersPageQueryDTO);
 
         if (CollectionUtils.isEmpty(ordersPage)) {
             return new PageResult(0, new ArrayList<>());
