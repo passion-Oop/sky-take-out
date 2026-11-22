@@ -43,4 +43,6 @@ public interface OrderMapper {
     void batchUpdate(List<Orders> ordersList);
 
     List<Orders> getTurnoverStatistics(LocalDateTime begin, LocalDateTime end, Integer completed);
+
+    Integer getOrderCount(LocalDateTime beginTime, LocalDateTime endTime, Integer status);
 }
