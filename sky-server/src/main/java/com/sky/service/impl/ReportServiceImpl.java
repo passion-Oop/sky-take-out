@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ReportServiceImpl implements ReportService {
@@ -38,16 +39,18 @@ public class ReportServiceImpl implements ReportService {
         // 生成 begin 到 end 的每一天（含首尾）
         List<LocalDate> localDateList = createLocalDateList(begin, end);
 
-        List<BigDecimal> amountList = new ArrayList<>();
 
-        for (LocalDate localDate : localDateList) {
-            LocalDateTime beginTime = LocalDateTime.of(localDate, LocalTime.MIN);
-            LocalDateTime endTime = LocalDateTime.of(localDate, LocalTime.MAX);
+        LocalDateTime beginTime = LocalDateTime.of(begin, LocalTime.MIN);
+        LocalDateTime endTime = LocalDateTime.of(end, LocalTime.MAX);
 
-            BigDecimal amountBigDecimal = orderMapper.getTurnoverStatistics(beginTime, endTime, Orders.COMPLETED);
-            // 当天没有已完成订单时 sum 返回 null，补 0 保证前端每天都有值
-            amountList.add(amountBigDecimal == null ? BigDecimal.ZERO : amountBigDecimal);
-        }
+        List<Orders> ordersList = orderMapper.getTurnoverStatistics(beginTime, endTime, Orders.COMPLETED);
+        // 当天没有已完成订单时 sum 返回 null，补 0 保证前端每天都有值
+        Map<LocalDate, BigDecimal> collect = ordersList.stream()
+                .collect(Collectors.groupingBy(
+                        orders -> orders.getOrderTime().toLocalDate(),
+                        Collectors.reducing(BigDecimal.ZERO, Orders::getAmount, BigDecimal::add)));
+
+        List<BigDecimal> amountList = localDateList.stream().map(localDate -> collect.getOrDefault(localDate, BigDecimal.ZERO)).toList();
 
         return TurnoverReportVO.builder()
                 .dateList(StringUtils.join(localDateList, ","))

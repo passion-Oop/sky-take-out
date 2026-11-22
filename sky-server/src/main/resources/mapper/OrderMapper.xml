@@ -60,8 +60,8 @@
                 (select count(*) from orders where status = 3) as confirmed,
                 (select count(*) from orders where status = 4) as deliveryInProgress
     </select>
-    <select id="getTurnoverStatistics" resultType="java.math.BigDecimal">
-        select sum(amount) from orders
+    <select id="getTurnoverStatistics" resultType="com.sky.entity.Orders">
+        select * from orders
         <where>
             <if test="begin != null">and order_time &gt;= #{begin} </if>
             <if test="end != null">and order_time &lt;= #{end} </if>

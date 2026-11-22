@@ -42,5 +42,5 @@ public interface OrderMapper {
 
     void batchUpdate(List<Orders> ordersList);
 
-    BigDecimal getTurnoverStatistics(LocalDateTime begin, LocalDateTime end, Integer completed);
+    List<Orders> getTurnoverStatistics(LocalDateTime begin, LocalDateTime end, Integer completed);
 }
