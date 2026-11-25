@@ -4,7 +4,6 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.StatusConstant;
-import com.sky.context.BaseContext;
 import com.sky.dto.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.entity.Category;
@@ -18,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -37,7 +35,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     /**
      * 新增分类
-     * @param categoryDTO 分类信息
+     * @param categoryDTO
      */
     public void save(CategoryDTO categoryDTO) {
         Category category = new Category();
@@ -52,13 +50,11 @@ public class CategoryServiceImpl implements CategoryService {
 
     /**
      * 分页查询
-     * @param categoryPageQueryDTO 分页查询条件
-     * @return PageResult 分页结果，包含分类列表和总条数
+     * @param categoryPageQueryDTO
+     * @return
      */
     public PageResult pageQuery(CategoryPageQueryDTO categoryPageQueryDTO) {
-
         PageHelper.startPage(categoryPageQueryDTO.getPage(),categoryPageQueryDTO.getPageSize());
-
         //下一条sql进行分页，自动加入limit关键字分页
         Page<Category> page = categoryMapper.pageQuery(categoryPageQueryDTO);
         return new PageResult(page.getTotal(), page.getResult());
@@ -66,7 +62,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     /**
      * 根据id删除分类
-      * @param id 分类ID
+     * @param id
      */
     public void deleteById(Long id) {
         //查询当前分类是否关联了菜品，如果关联了就抛出业务异常
@@ -89,7 +85,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     /**
      * 修改分类
-      * @param categoryDTO 分类信息
+     * @param categoryDTO
      */
     public void update(CategoryDTO categoryDTO) {
         Category category = new Category();
@@ -100,8 +96,8 @@ public class CategoryServiceImpl implements CategoryService {
 
     /**
      * 启用、禁用分类
-      * @param status 状态
-      * @param id 分类ID
+     * @param status
+     * @param id
      */
     public void startOrStop(Integer status, Long id) {
 
@@ -113,8 +109,8 @@ public class CategoryServiceImpl implements CategoryService {
 
     /**
      * 根据类型查询分类
-      * @param type 类型
-      * @return 分类列表
+     * @param type
+     * @return
      */
     public List<Category> list(Integer type) {
         return categoryMapper.list(type);

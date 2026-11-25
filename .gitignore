@@ -10,3 +10,4 @@
 # JVM 崩溃日志
 hs_err_pid*.log
 replay_pid*.log
+/sky-server/src/main/resources/application-dev.yml

@@ -219,11 +219,11 @@ public class ReportServiceImpl implements ReportService {
             row.getCell(4).setCellValue(businessDataVO.getUnitPrice());
 
             ServletOutputStream servletOutputStream = httpServletResponse.getOutputStream();
-            xssfWorkbook.write(servletOutputStream);
+
 
             for (int i = 0; i < 30; i++) {
 
-                LocalDate time = dateBegin.minusDays(i);
+                LocalDate time = dateBegin.plusDays(i);
 
                 BusinessDataVO businessData = workspaceService.getBusinessData(
                         LocalDateTime.of(time, LocalTime.MIN),
@@ -239,7 +239,7 @@ public class ReportServiceImpl implements ReportService {
                 row.getCell(6).setCellValue(businessData.getNewUsers());
             }
 
-
+            xssfWorkbook.write(servletOutputStream);
             servletOutputStream.close();
             xssfWorkbook.close();
 
