@@ -418,7 +418,7 @@ public class OrderServiceImpl implements OrderService {
             throw new OrderBusinessException(msg + "：" + jsonObject.getString("message") + "（status=" + status + "）");
         }
 
-        JSONObject location = jsonObject.getJSONObject("result").getJSONObject("location");
+            JSONObject location = jsonObject.getJSONObject("result").getJSONObject("location");
 
         // 注意：百度路线规划接口的坐标顺序是 "纬度,经度"，与地理编码返回字段的 lng/lat 正好相反
         return location.getString("lat") + "," + location.getString("lng");

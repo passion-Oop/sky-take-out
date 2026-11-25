@@ -1,18 +1,25 @@
 package com.sky.service.impl;
 
+import com.sky.dto.GoodsSalesDTO;
 import com.sky.entity.Orders;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
-import com.sky.vo.OrderReportVO;
-import com.sky.vo.TurnoverReportVO;
-import com.sky.vo.UserReportVO;
+import com.sky.service.WorkspaceService;
+import com.sky.vo.*;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,6 +38,9 @@ public class ReportServiceImpl implements ReportService {
 
     @Autowired
     UserMapper userMapper;
+
+    @Autowired
+    WorkspaceService workspaceService;
 
     @Override
     public TurnoverReportVO getTurnoverStatistics(LocalDate begin, LocalDate end) {
@@ -150,5 +160,94 @@ public class ReportServiceImpl implements ReportService {
                 .totalUserList(StringUtils.join(totalUSerList.reversed(), ","))
                 .newUserList(StringUtils.join(newUserList, ","))
                 .build();
+    }
+
+    @Override
+    public SalesTop10ReportVO getSalesTop10(LocalDate begin, LocalDate end) {
+        LocalDateTime beginTime = LocalDateTime.of(begin, LocalTime.MIN);
+        LocalDateTime endTime = LocalDateTime.of(end, LocalTime.MAX);
+
+        List<GoodsSalesDTO> goodsSalesDTOList = orderMapper.getSalesTop10(beginTime, endTime);
+
+
+        return SalesTop10ReportVO.builder()
+                .nameList(StringUtils.join(goodsSalesDTOList.stream()
+                        .map(GoodsSalesDTO::getName).toList(), ","))
+                .numberList(StringUtils.join(goodsSalesDTOList.stream()
+                        .map(GoodsSalesDTO::getNumber).toList(), ","))
+                .build();
+    }
+
+    @Override
+    public void exportBusinessData(HttpServletResponse httpServletResponse) {
+
+        try {
+
+            LocalDate dateBegin = LocalDate.now().minusDays(30);
+            LocalDate dateEnd = LocalDate.now().minusDays(1);
+
+            LocalDateTime beginTime = LocalDateTime.of(dateBegin ,LocalTime.MIN);
+            LocalDateTime endTime = LocalDateTime.of(dateEnd, LocalTime.MAX);
+
+            BusinessDataVO businessDataVO = workspaceService.getBusinessData(beginTime, endTime);
+
+            InputStream resourceAsStream = this.getClass()
+                    .getClassLoader()
+                    .getResourceAsStream("template\\运营数据报表模板.xlsx");
+
+            XSSFWorkbook xssfWorkbook = null;
+            if (resourceAsStream == null) {
+                return;
+            }
+            xssfWorkbook = new XSSFWorkbook(resourceAsStream);
+
+            XSSFSheet sheetAt = xssfWorkbook.getSheetAt(0);
+
+            sheetAt.getRow(1)
+                    .getCell(1)
+                    .setCellValue("时间:" + dateBegin + "至" + dateEnd);
+
+            XSSFRow row = sheetAt.getRow(3);
+
+            row.getCell(2).setCellValue(businessDataVO.getTurnover());
+            row.getCell(4).setCellValue(businessDataVO.getOrderCompletionRate());
+            row.getCell(6).setCellValue(businessDataVO.getNewUsers());
+
+            row = sheetAt.getRow(4);
+
+            row.getCell(2).setCellValue(businessDataVO.getValidOrderCount());
+            row.getCell(4).setCellValue(businessDataVO.getUnitPrice());
+
+            ServletOutputStream servletOutputStream = httpServletResponse.getOutputStream();
+            xssfWorkbook.write(servletOutputStream);
+
+            for (int i = 0; i < 30; i++) {
+
+                LocalDate time = dateBegin.minusDays(i);
+
+                BusinessDataVO businessData = workspaceService.getBusinessData(
+                        LocalDateTime.of(time, LocalTime.MIN),
+                        LocalDateTime.of(time, LocalTime.MAX));
+
+                row = sheetAt.getRow(7 + i);
+
+                row.getCell(1).setCellValue(time.toString());
+                row.getCell(2).setCellValue(businessData.getTurnover());
+                row.getCell(3).setCellValue(businessData.getValidOrderCount());
+                row.getCell(4).setCellValue(businessData.getOrderCompletionRate());
+                row.getCell(5).setCellValue(businessData.getUnitPrice());
+                row.getCell(6).setCellValue(businessData.getNewUsers());
+            }
+
+
+            servletOutputStream.close();
+            xssfWorkbook.close();
+
+        } catch (IOException e) {
+
+            throw new RuntimeException(e);
+
+        }
+
     }
 }

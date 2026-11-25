@@ -3,10 +3,12 @@ package com.sky.controller.admin;
 import com.sky.result.Result;
 import com.sky.service.ReportService;
 import com.sky.vo.OrderReportVO;
+import com.sky.vo.SalesTop10ReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -63,6 +65,24 @@ public class ReportController {
         log.info("用户统计：{}, {}", begin, end);
         UserReportVO userReportVO = reportService.getUserStatistics(begin, end);
         return Result.success(userReportVO);
+    }
+
+    @GetMapping("/top10")
+    @Operation(summary = "查询销量排名top10接口")
+    public Result<SalesTop10ReportVO> top10(
+            @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate begin,
+            @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate end) {
+
+        log.info("查询销量排名top10：{}, {}", begin, end);
+        SalesTop10ReportVO salesTop10ReportVO = reportService.getSalesTop10(begin, end);
+        return Result.success(salesTop10ReportVO);
+    }
+
+    @GetMapping("/export")
+    @Operation(summary = "导出运营数据报表")
+    public void export(HttpServletResponse httpServletResponse) {
+        reportService.exportBusinessData(httpServletResponse);
+        return;
     }
 
 
